@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>INFO Event System</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script>
+        function filterByMood(mood) {
+            $(".event-card, .timeline-item").hide();
+            $(`.event-card[data-mood~="${mood}"], .timeline-item[data-mood~="${mood}"]`).show();
+        }
+
+        function surpriseMe() {
+            $.get("/surprise-me", function(data) {
+                alert("Surprise Event: " + data.name + "\n\nDescription: " + data.description);
+            });
+        }
+
+        function showEventDetails(description) {
+            alert(description);
+        }
+    </script>
+</head>
+<body>
+
+<div class="container mt-4">
+    <h2>INFO Event System</h2>
+
+    <!-- Mood Picker and Surprise Me -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <label for="mood">Mood Picker:</label>
+            <select id="mood" onchange="filterByMood(this.value)">
+                <option value="all">All</option>
+                <option value="Curious">Curious</option>
+                <option value="Hungry">Hungry</option>
+                <option value="Adventurous">Adventurous</option>
+            </select>
+        </div>
+        <div class="col-md-6 text-right">
+            <button class="btn btn-primary" onclick="showSurpriseEvent()">Surprise Me</button>
+        </div>
+    </div>
+
+    <!-- Event Display Cards -->
+    <h4>Events</h4>
+    <div class="row mb-4">
+        {% for event in events %}
+        <div class="col-md-4 event-card" data-mood="{{ ' '.join(event.mood) }}">
+            <div class="card">
+                <div class="card-header">{{ event.name }} 
+                {% if event.badge %}
+                    <span class="badge badge-danger">{{ event.badge }}</span>
+                {% endif %}
+                </div>
+                <div class="card-body">
+                    <p>Type: {{ event.type }}</p>
+                    <p>Importance: {{ event.importance }}</p>
+                    <p>Freebies: {{ event.freebies }}</p>
+                    <button class="btn btn-info btn-sm" onclick="showEventDetails('{{ event.description }}')">More Details</button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Horizontal Event Timeline -->
+    <h4>Event Timeline</h4>
+    <div class="timeline">
+        {% for event in events %}
+        <div class="timeline-item" data-mood="{{ ' '.join(event.mood) }}">
+            <div class="timeline-point"></div>
+            <div class="timeline-date">{{ event.date }}</div>
+            <div class="timeline-label" onclick="showEventDetails('{{ event.description }}')">{{ event.name }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Surprise Me Modal -->
+<div class="modal fade" id="surpriseModal" tabindex="-1" role="dialog" aria-labelledby="surpriseModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="surpriseModalLabel">Surprise Event</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <!-- Event details will be populated here -->
+          <h4 id="eventName"></h4>
+          <p id="eventDescription"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- JavaScript to handle Surprise Me event -->
+  <script>
+      function showSurpriseEvent() {
+          $.get("/surprise-me", function(data) {
+              $("#eventName").text(data.name);
+              $("#eventDescription").text(data.description);
+              $("#surpriseModal").modal('show');
+          });
+      }
+  </script>
+  
+<!-- Custom CSS for Horizontal Timeline -->
+<style>
+    .timeline {
+        display: flex;
+        overflow-x: scroll;
+        white-space: nowrap;
+        padding: 20px 0;
+    }
+    .timeline-item {
+        display: inline-block;
+        position: relative;
+        min-width: 200px;
+        margin-right: 20px;
+    }
+    .timeline-date {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    .timeline-point {
+        width: 10px;
+        height: 10px;
+        background-color: #999;
+        border-radius: 50%;
+        margin: 0 auto 10px;
+    }
+    .timeline-label {
+        text-align: center;
+        cursor: pointer;
+        border: 1px solid #ddd;
+        padding: 5px;
+        border-radius: 5px;
+    }
+    .timeline-label:hover {
+        background-color: #f5f5f5;
+    }
+</style>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
